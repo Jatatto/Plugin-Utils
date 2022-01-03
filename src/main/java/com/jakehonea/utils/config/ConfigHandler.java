@@ -55,7 +55,7 @@ public class ConfigHandler {
         }
     }
 
-    private static <T> void reload(String path, T clazz, File file) throws IllegalAccessException {
+    public static <T> void reload(String path, T clazz, File file) throws IllegalAccessException {
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(file);
         for (Field f : clazz.getClass().getDeclaredFields()) {
             if (f.isAnnotationPresent(ConfigValue.class)) {
@@ -73,7 +73,7 @@ public class ConfigHandler {
         }
     }
 
-    private static <T> void setPresets(String path, T clazz, File file) throws Exception {
+    public static <T> void setPresets(String path, T clazz, File file) throws Exception {
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(file);
         AtomicBoolean updated = new AtomicBoolean(false);
         for (Field f : clazz.getClass().getDeclaredFields()) {
