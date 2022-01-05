@@ -1,5 +1,6 @@
 package com.jakehonea.utils.command;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.jakehonea.utils.messages.Message;
 import com.jakehonea.utils.utils.Possible;
@@ -9,9 +10,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class Command {
 
@@ -35,24 +39,19 @@ public class Command {
     private Optional<TabCompleter> tabCompleter;
     @Getter
     @NonNull
+    private Optional<List<SubCommand>> arguments;
+    @Getter
+    @NonNull
     private Optional<Message> noPermissionMessage;
     @Getter
     @NonNull
-    private Optional<Map<String, Argument>> arguments;
-    @Getter
-    @NonNull
-    private Optional<BiConsumer<CommandSender, String[]>> onRun;
+    private Optional<Consumer<CommandPacket>> executor;
 
-    private Command() {
-
+    protected Command() {
     }
 
     public static CommandBuilder builder() {
         return new CommandBuilder();
-    }
-
-    public interface Argument {
-        void run(CommandSender sender, String[] bits);
     }
 
     public static class CommandBuilder {
@@ -63,9 +62,9 @@ public class Command {
         private String description;
         private Message helpMessage;
         private TabCompleter tabCompleter;
+        private List<SubCommand> arguments;
         private Message noPermissionMessage;
-        private Map<String, Argument> arguments;
-        private BiConsumer<CommandSender, String[]> onRun;
+        private Consumer<CommandPacket> executor;
 
         public CommandBuilder name(String name) {
             this.name = name;
@@ -92,11 +91,11 @@ public class Command {
             return this;
         }
 
-        public CommandBuilder addArgument(String name, Argument argument) {
+        public CommandBuilder addArgument(SubCommand subCommand) {
             if (this.arguments == null) {
-                this.arguments = Maps.newHashMap();
+                this.arguments = Lists.newArrayList();
             }
-            arguments.put(name, argument);
+            arguments.add(subCommand);
             return this;
         }
 
@@ -110,14 +109,19 @@ public class Command {
             return this;
         }
 
-        public CommandBuilder onRun(BiConsumer<CommandSender, String[]> consumer) {
-            this.onRun = consumer;
+        public CommandBuilder onRun(Consumer<CommandPacket> consumer) {
+            this.executor = consumer;
             return this;
         }
 
         public Command build() {
-            Command command = new Command();
+            return build(Command.class);
+        }
+
+        public <T extends Command> T build(Class<T> type) {
+            T command = null;
             try {
+                command = type.getConstructor().newInstance();
                 for (Field field : getClass().getDeclaredFields()) {
                     if (!field.canAccess(this)) {
                         field.setAccessible(true);
@@ -128,7 +132,8 @@ public class Command {
                     }
                     f.set(command, Possible.of(field.get(this)));
                 }
-            } catch (NoSuchFieldException | IllegalAccessException ignored) {
+            } catch (NoSuchFieldException | IllegalAccessException | InvocationTargetException
+                    | InstantiationException | NoSuchMethodException ignored) {
             }
             return command;
         }

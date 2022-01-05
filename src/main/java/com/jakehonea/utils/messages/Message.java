@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -87,6 +88,13 @@ public class Message {
 
     public static Message empty() {
         return EMPTY;
+    }
+
+    public static Message of(String... lines) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", List.of(lines));
+
+        return new Message(map);
     }
 
     public void sendMessage(CommandSender player) {

@@ -1,4 +1,4 @@
-package com.jakehonea.test;
+package com.jakehonea.utils;
 
 import java.lang.reflect.Field;
 

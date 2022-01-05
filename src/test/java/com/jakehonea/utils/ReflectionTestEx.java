@@ -1,4 +1,4 @@
-package com.jakehonea.test;
+package com.jakehonea.utils;
 
 
 public class ReflectionTestEx extends ReflectionTest {
