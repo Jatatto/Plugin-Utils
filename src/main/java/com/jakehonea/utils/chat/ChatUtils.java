@@ -4,6 +4,7 @@ import com.jakehonea.utils.Utils;
 import com.jakehonea.utils.config.ConfigHandler;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -25,13 +26,18 @@ public class ChatUtils {
         });
     }
 
-    public static String replaceVariables(String string, Player player,
-                                          Map<String, String> variables) {
-        for (Map.Entry<String, String> variable : variables.entrySet()) {
-            string = string.replace(variable.getKey(), variable.getValue());
+    public static String replaceVariables(String string, CommandSender player,
+            Map<String, String> variables) {
+        if (string == null) {
+            return "";
         }
-        if (Utils.HAS_PLACEHOLDER_API) {
-            string = PlaceholderAPI.setPlaceholders(player, string);
+        if (variables != null) {
+            for (Map.Entry<String, String> variable : variables.entrySet()) {
+                string = string.replace(variable.getKey(), variable.getValue());
+            }
+        }
+        if (Utils.HAS_PLACEHOLDER_API && player instanceof Player) {
+            string = PlaceholderAPI.setPlaceholders((Player) player, string);
         }
         return string;
     }

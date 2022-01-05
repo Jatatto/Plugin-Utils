@@ -1,6 +1,7 @@
 package com.jakehonea.utils.config;
 
 import com.jakehonea.utils.Utils;
+import com.jakehonea.utils.utils.Possible;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -18,9 +19,14 @@ public class ConfigFile {
         file = new File(utils.getDataFolder() + "/" + fileName + ".yml");
         checkFile(fileName);
         yamlConfiguration = YamlConfiguration.loadConfiguration(file);
+        Possible.of(getClass().getAnnotation(ConfigInfo.class))
+                .ifPresentOrElse(
+                        info -> reload(info.value()),
+                        () -> reload(ConfigHandler.EMPTY_PATH)
+                );
     }
 
-    public void reload() {
+    public void reload(String path) {
         ConfigHandler.setPresets(this, ConfigHandler.EMPTY_PATH);
         ConfigHandler.reload(this, ConfigHandler.EMPTY_PATH);
     }
