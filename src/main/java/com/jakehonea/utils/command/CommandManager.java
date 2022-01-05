@@ -24,20 +24,6 @@ public class CommandManager implements CommandExecutor {
     public CommandManager(Utils utils) {
         this.utils = utils;
         this.commands = Lists.newArrayList();
-
-        registerCommand(Command.builder()
-                .name("test")
-                .permission("Permission.test")
-                .addArgument(
-                        SubCommand.builder()
-                                .name("this")
-                                .onRun(packet -> packet.getSender().sendMessage("you ran the test" +
-                                        " subarg"))
-                                .build(SubCommand.class)
-                )
-                .build()
-        );
-
     }
 
     public void registerCommand(Command command) {
