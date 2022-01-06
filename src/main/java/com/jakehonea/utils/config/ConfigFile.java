@@ -19,7 +19,7 @@ public class ConfigFile {
         file = new File(utils.getDataFolder() + "/" + fileName + ".yml");
         checkFile(fileName);
         yamlConfiguration = YamlConfiguration.loadConfiguration(file);
-        Possible.of(getClass().getAnnotation(ConfigInfo.class))
+        Possible.emptyIfNull(getClass().getAnnotation(ConfigInfo.class))
                 .ifPresentOrElse(
                         info -> reload(info.value()),
                         () -> reload(ConfigHandler.EMPTY_PATH)

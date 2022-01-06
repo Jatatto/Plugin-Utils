@@ -58,8 +58,8 @@ public class Message {
             HANDLERS.put("title", (data, player) -> {
                 if (data instanceof Map && player instanceof Player) {
                     Map<String, Object> titleData = (Map<String, Object>) data;
-                    String header = Possible.of((String) titleData.get("header")).orElse("");
-                    String footer = Possible.of((String) titleData.get("footer")).orElse("");
+                    String header = Possible.emptyIfNull((String) titleData.get("header")).orElse("");
+                    String footer = Possible.emptyIfNull((String) titleData.get("footer")).orElse("");
                     int fadeIn = (int) titleData.getOrDefault("fade-in", 10);
                     int stay = (int) titleData.getOrDefault("stay", 40);
                     int fadeOut = (int) titleData.getOrDefault("fade-out", 10);

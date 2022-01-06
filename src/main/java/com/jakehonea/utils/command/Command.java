@@ -1,20 +1,16 @@
 package com.jakehonea.utils.command;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.jakehonea.utils.messages.Message;
 import com.jakehonea.utils.utils.Possible;
 import lombok.Getter;
 import lombok.NonNull;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class Command {
@@ -130,7 +126,7 @@ public class Command {
                     if (!f.canAccess(command)) {
                         f.setAccessible(true);
                     }
-                    f.set(command, Possible.of(field.get(this)));
+                    f.set(command, Possible.emptyIfNull(field.get(this)));
                 }
             } catch (NoSuchFieldException | IllegalAccessException | InvocationTargetException
                     | InstantiationException | NoSuchMethodException ignored) {

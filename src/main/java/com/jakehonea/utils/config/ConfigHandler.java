@@ -32,7 +32,7 @@ public class ConfigHandler {
 
     private static Optional<Object> fetch(Class<?> fieldType, Object value,
                                           final Map<Class<?>, Function<Object, ?>> map) {
-        return Possible.of(
+        return Possible.emptyIfNull(
                 map.containsKey(fieldType) ?
                         map.get(fieldType).apply(value) :
                         value
