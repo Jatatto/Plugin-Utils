@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -21,31 +22,34 @@ public class Command {
 
     @Getter
     @NonNull
-    private Optional<String> name;
+    protected Optional<String> name;
     @Getter
     @NonNull
-    private Optional<String> usage;
+    protected Optional<String> usage;
     @Getter
     @NonNull
-    private Optional<String> permission;
+    protected Optional<String> permission;
     @Getter
     @NonNull
-    private Optional<String> description;
+    protected Optional<String> description;
     @Getter
     @NonNull
-    private Optional<Message> helpMessage;
+    protected Optional<Message> helpMessage;
     @Getter
     @NonNull
-    private Optional<TabCompleter> tabCompleter;
+    protected Optional<TabCompleter> tabCompleter;
     @Getter
     @NonNull
-    private Optional<List<SubCommand>> arguments;
+    protected Optional<List<SubCommand>> arguments;
     @Getter
     @NonNull
-    private Optional<Message> noPermissionMessage;
+    protected Optional<Message> noPermissionMessage;
     @Getter
     @NonNull
-    private Optional<Consumer<CommandPacket>> executor;
+    protected Optional<Boolean> useBasicTabCompleter;
+    @Getter
+    @NonNull
+    protected Optional<Consumer<CommandPacket>> executor;
 
     protected Command() {
     }
@@ -64,6 +68,7 @@ public class Command {
         private TabCompleter tabCompleter;
         private List<SubCommand> arguments;
         private Message noPermissionMessage;
+        private boolean useBasicTabCompleter;
         private Consumer<CommandPacket> executor;
 
         public CommandBuilder name(String name) {
@@ -104,6 +109,11 @@ public class Command {
             return this;
         }
 
+        public CommandBuilder useBasicTabCompleter(boolean value) {
+            this.useBasicTabCompleter = value;
+            return this;
+        }
+
         public CommandBuilder noPermissionMessage(Message message) {
             this.noPermissionMessage = message;
             return this;
@@ -121,23 +131,21 @@ public class Command {
         public <T extends Command> T build(Class<T> type) {
             T command = null;
             try {
-                command = type.getConstructor().newInstance();
+                Constructor<?> constructor = type.getDeclaredConstructors()[0];
+                constructor.setAccessible(true);
+                command = (T) constructor.newInstance();
+                Class<?> basis = command.getClass().getSuperclass() == Command.class ?
+                        command.getClass().getSuperclass() : command.getClass();
                 for (Field field : getClass().getDeclaredFields()) {
-                    if (!field.canAccess(this)) {
-                        field.setAccessible(true);
-                    }
-                    Field f = command.getClass().getDeclaredField(field.getName());
-                    if (!f.canAccess(command)) {
-                        f.setAccessible(true);
-                    }
+                    Field f = basis.getDeclaredField(field.getName());
+                    f.setAccessible(true);
                     f.set(command, Possible.of(field.get(this)));
                 }
             } catch (NoSuchFieldException | IllegalAccessException | InvocationTargetException
-                    | InstantiationException | NoSuchMethodException ignored) {
+                    | InstantiationException ignored) {
             }
             return command;
         }
-
     }
 
 }

@@ -68,7 +68,13 @@ public class ConfigHandler {
                 if (!f.canAccess(clazz)) {
                     f.setAccessible(true);
                 }
-                f.set(clazz, fetch(f.getType(), value, DECODER));
+                fetch(f.getType(), value, DECODER).ifPresent(obj -> {
+                    try {
+                        f.set(clazz, obj);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
         }
     }
@@ -82,12 +88,16 @@ public class ConfigHandler {
                 String key = configAnnotation.value().length() == 0 ? f.getName() :
                         configAnnotation.value();
                 if (!configuration.isSet(path + key)) {
-                    Object value = f.get(clazz);
                     if (!f.canAccess(clazz)) {
                         f.setAccessible(true);
                     }
+                    Object value = f.get(clazz);
                     fetch(f.getType(), value, ENCODER).ifPresent(obj -> {
-                        configuration.set(path + key, obj);
+                        if (obj instanceof Map) {
+                            configuration.createSection(path + key, (Map<?, ?>) obj);
+                        } else {
+                            configuration.set(path + key, obj);
+                        }
                         updated.set(true);
                     });
                 }

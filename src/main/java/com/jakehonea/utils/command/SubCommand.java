@@ -7,6 +7,16 @@ import java.util.Optional;
 
 public class SubCommand extends Command {
 
+    protected SubCommand() {
+    }
+
+    /**
+     * Override the tab completer since this
+     * is a {@link Command} exclusive feature
+     * </p>
+     *
+     * @return an empty optional tab completer
+     */
     @Override
     public @NonNull Optional<TabCompleter> getTabCompleter() {
         return Optional.empty();

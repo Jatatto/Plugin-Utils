@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 
 public class ConfigFile {
 
@@ -19,6 +20,10 @@ public class ConfigFile {
         file = new File(utils.getDataFolder() + "/" + fileName + ".yml");
         checkFile(fileName);
         yamlConfiguration = YamlConfiguration.loadConfiguration(file);
+        setup();
+    }
+
+    public void setup() {
         Possible.of(getClass().getAnnotation(ConfigInfo.class))
                 .ifPresentOrElse(
                         info -> reload(info.value()),
@@ -26,9 +31,9 @@ public class ConfigFile {
                 );
     }
 
-    public void reload(String path) {
-        ConfigHandler.setPresets(this, ConfigHandler.EMPTY_PATH);
-        ConfigHandler.reload(this, ConfigHandler.EMPTY_PATH);
+    private void reload(String path){
+        ConfigHandler.setPresets(this, path);
+        ConfigHandler.reload(this, path);
     }
 
     protected void save() throws IOException {

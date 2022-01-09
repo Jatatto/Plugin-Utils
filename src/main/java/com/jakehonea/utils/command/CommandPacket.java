@@ -15,10 +15,23 @@ public class CommandPacket implements AutoCloseable {
         this.args = args;
     }
 
+    /**
+     * Allows a way for a cleaner and direct way for the user to cast the sender
+     *
+     * @param type the class to cast the {@link CommandSender} instance to
+     * @param <T>  the type to return
+     * @return     a casted instance of {@link CommandSender} to  type {@link T}
+     */
     public <T extends CommandSender> T getSenderAs(Class<T> type) {
-        return (T) (sender);
+        if (!(type.isInstance(sender))) {
+            throw new ClassCastException("cannot cast sender as " + type.getName());
+        }
+        return type.cast(sender);
     }
 
+    /**
+     * To prevent memory leaks, we must null out the CommandSender instance
+     */
     @Override
     public void close() {
         this.sender = null;
