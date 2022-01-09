@@ -44,19 +44,21 @@ public class Gui {
             Bukkit.getPluginManager().registerEvents(new Listener() {
                 @EventHandler
                 public void onClick(InventoryClickEvent e) {
-                    if (!ACTIVE_GUIS.contains(Gui.this)) {
-                        HandlerList.unregisterAll(this);
-                    } else {
-                        AtomicBoolean buttonClicked = new AtomicBoolean(false);
-                        buttons.stream().filter(button -> button.getSlot().isPresent() && button.getSlot().get() == e.getSlot())
-                                .forEach(button -> {
-                                    if (button.getOnClick().isPresent()) {
-                                        button.getOnClick().get().accept(e);
-                                        buttonClicked.set(true);
-                                    }
-                                });
-                        if (buttonClicked.get()) {
-                            buttons.forEach(button -> button.getOnOtherButtonClick().ifPresent(consumer -> consumer.accept(e)));
+                    if (e.getInventory().equals(inventory)) {
+                        if (!ACTIVE_GUIS.contains(Gui.this)) {
+                            HandlerList.unregisterAll(this);
+                        } else {
+                            AtomicBoolean buttonClicked = new AtomicBoolean(false);
+                            buttons.stream().filter(button -> button.getSlot().isPresent() && button.getSlot().get() == e.getSlot())
+                                    .forEach(button -> {
+                                        if (button.getOnClick().isPresent()) {
+                                            button.getOnClick().get().accept(e);
+                                            buttonClicked.set(true);
+                                        }
+                                    });
+                            if (buttonClicked.get()) {
+                                buttons.forEach(button -> button.getOnOtherButtonClick().ifPresent(consumer -> consumer.accept(e)));
+                            }
                         }
                     }
                 }
@@ -68,7 +70,7 @@ public class Gui {
     public void unregister() {
         if (listener != null) {
             HandlerList.unregisterAll(listener);
-            ACTIVE_GUIS.add(this);
+            ACTIVE_GUIS.remove(this);
         }
     }
 
