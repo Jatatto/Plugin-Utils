@@ -58,8 +58,8 @@ public class Message {
             HANDLERS.put("title", (data, player) -> {
                 if (data instanceof Map && player instanceof Player) {
                     Map<String, Object> titleData = (Map<String, Object>) data;
-                    String header = Possible.emptyIfNull((String) titleData.get("header")).orElse("");
-                    String footer = Possible.emptyIfNull((String) titleData.get("footer")).orElse("");
+                    String header = Possible.of((String) titleData.get("header")).orElse("");
+                    String footer = Possible.of((String) titleData.get("footer")).orElse("");
                     int fadeIn = (int) titleData.getOrDefault("fade-in", 10);
                     int stay = (int) titleData.getOrDefault("stay", 40);
                     int fadeOut = (int) titleData.getOrDefault("fade-out", 10);
@@ -109,27 +109,27 @@ public class Message {
 
     public static class MessageBuilder {
 
-        private Map<String, Object> map;
+        private Map<String, Object> mapBuilder;
 
         private MessageBuilder() {
-            this.map = Maps.newHashMap();
+            this.mapBuilder = Maps.newHashMap();
         }
 
         public MessageBuilder setActionBar(String bar) {
-            map.put("action-bar", bar);
+            mapBuilder.put("action-bar", bar);
             return this;
         }
 
         public MessageBuilder setMessage(String... message) {
-            map.put("message", List.of(message));
+            mapBuilder.put("message", List.of(message));
             return this;
         }
 
         public MessageBuilder addMessage(String message) {
-            List<String> list = (List<String>) map.get("message");
+            List<String> list = (List<String>) mapBuilder.get("message");
             if (list == null) {
                 list = Lists.newArrayList();
-                map.put("message", list);
+                mapBuilder.put("message", list);
             }
             list.add(message);
             return this;
@@ -147,12 +147,12 @@ public class Message {
             titleData.put("fadeIn", fadeIn);
             titleData.put("stay", stay);
             titleData.put("fadeOut", fadeOut);
-            map.put("title", titleData);
+            mapBuilder.put("title", titleData);
             return this;
         }
 
         public Message build() {
-            return new Message(map);
+            return new Message(mapBuilder);
         }
 
     }

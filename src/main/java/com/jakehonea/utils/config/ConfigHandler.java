@@ -31,8 +31,8 @@ public class ConfigHandler {
     }
 
     private static Optional<Object> fetch(Class<?> fieldType, Object value,
-                                          final Map<Class<?>, Function<Object, ?>> map) {
-        return Possible.emptyIfNull(
+            final Map<Class<?>, Function<Object, ?>> map) {
+        return Possible.of(
                 map.containsKey(fieldType) ?
                         map.get(fieldType).apply(value) :
                         value
@@ -57,18 +57,28 @@ public class ConfigHandler {
 
     public static <T> void reload(String path, T clazz, File file) throws IllegalAccessException {
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+        boolean globalFlag = clazz.getClass().isAnnotationPresent(ConfigValue.class);
+
         for (Field f : clazz.getClass().getDeclaredFields()) {
-            if (f.isAnnotationPresent(ConfigValue.class)) {
+            if (f.isAnnotationPresent(ConfigValue.class) || globalFlag) {
                 ConfigValue configAnnotation = f.getAnnotation(ConfigValue.class);
+
                 String key = configAnnotation.value().length() == 0 ? f.getName() :
-                        configAnnotation.value();
+                        configAnnotation.value() + (globalFlag ? "." + f.getName() : "");
+
                 if (!configuration.isSet(path + key))
                     continue;
                 Object value = configuration.get(path + key);
                 if (!f.canAccess(clazz)) {
                     f.setAccessible(true);
                 }
-                f.set(clazz, fetch(f.getType(), value, DECODER));
+                fetch(f.getType(), value, DECODER).ifPresent(obj -> {
+                    try {
+                        f.set(clazz, obj);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
         }
     }
@@ -76,18 +86,26 @@ public class ConfigHandler {
     public static <T> void setPresets(String path, T clazz, File file) throws Exception {
         FileConfiguration configuration = YamlConfiguration.loadConfiguration(file);
         AtomicBoolean updated = new AtomicBoolean(false);
+        boolean globalFlag = clazz.getClass().isAnnotationPresent(ConfigValue.class);
+
         for (Field f : clazz.getClass().getDeclaredFields()) {
-            if (f.isAnnotationPresent(ConfigValue.class)) {
+            if (f.isAnnotationPresent(ConfigValue.class) || globalFlag) {
                 ConfigValue configAnnotation = f.getAnnotation(ConfigValue.class);
+
                 String key = configAnnotation.value().length() == 0 ? f.getName() :
-                        configAnnotation.value();
+                        configAnnotation.value() + (globalFlag ? "." + f.getName() : "");
+
                 if (!configuration.isSet(path + key)) {
-                    Object value = f.get(clazz);
                     if (!f.canAccess(clazz)) {
                         f.setAccessible(true);
                     }
+                    Object value = f.get(clazz);
                     fetch(f.getType(), value, ENCODER).ifPresent(obj -> {
-                        configuration.set(path + key, obj);
+                        if (obj instanceof Map) {
+                            configuration.createSection(path + key, (Map<?, ?>) obj);
+                        } else {
+                            configuration.set(path + key, obj);
+                        }
                         updated.set(true);
                     });
                 }

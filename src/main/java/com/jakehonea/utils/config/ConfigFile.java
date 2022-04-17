@@ -19,16 +19,20 @@ public class ConfigFile {
         file = new File(utils.getDataFolder() + "/" + fileName + ".yml");
         checkFile(fileName);
         yamlConfiguration = YamlConfiguration.loadConfiguration(file);
-        Possible.emptyIfNull(getClass().getAnnotation(ConfigInfo.class))
+        setup();
+    }
+
+    public void setup() {
+        Possible.of(getClass().getAnnotation(ConfigInfo.class))
                 .ifPresentOrElse(
                         info -> reload(info.value()),
                         () -> reload(ConfigHandler.EMPTY_PATH)
                 );
     }
 
-    public void reload(String path) {
-        ConfigHandler.setPresets(this, ConfigHandler.EMPTY_PATH);
-        ConfigHandler.reload(this, ConfigHandler.EMPTY_PATH);
+    private void reload(String path) {
+        ConfigHandler.setPresets(this, path);
+        ConfigHandler.reload(this, path);
     }
 
     protected void save() throws IOException {
@@ -61,5 +65,4 @@ public class ConfigFile {
         }
         return false;
     }
-
 }

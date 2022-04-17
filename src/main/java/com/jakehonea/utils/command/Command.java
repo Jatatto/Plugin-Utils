@@ -4,44 +4,28 @@ import com.google.common.collect.Lists;
 import com.jakehonea.utils.messages.Message;
 import com.jakehonea.utils.utils.Possible;
 import lombok.Getter;
-import lombok.NonNull;
 import org.bukkit.command.TabCompleter;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+@Getter
 public class Command {
 
-    @Getter
-    @NonNull
-    private Optional<String> name;
-    @Getter
-    @NonNull
-    private Optional<String> usage;
-    @Getter
-    @NonNull
-    private Optional<String> permission;
-    @Getter
-    @NonNull
-    private Optional<String> description;
-    @Getter
-    @NonNull
-    private Optional<Message> helpMessage;
-    @Getter
-    @NonNull
-    private Optional<TabCompleter> tabCompleter;
-    @Getter
-    @NonNull
-    private Optional<List<SubCommand>> arguments;
-    @Getter
-    @NonNull
-    private Optional<Message> noPermissionMessage;
-    @Getter
-    @NonNull
-    private Optional<Consumer<CommandPacket>> executor;
+    protected Optional<String> name;
+    protected Optional<String> usage;
+    protected Optional<String> permission;
+    protected Optional<String> description;
+    protected Optional<Message> helpMessage;
+    protected Optional<TabCompleter> tabCompleter;
+    protected Optional<List<SubCommand>> arguments;
+    protected Optional<Message> noPermissionMessage;
+    protected Optional<Boolean> useBasicTabCompleter;
+    protected Optional<Consumer<CommandPacket>> executor;
 
     protected Command() {
     }
@@ -60,6 +44,7 @@ public class Command {
         private TabCompleter tabCompleter;
         private List<SubCommand> arguments;
         private Message noPermissionMessage;
+        private boolean useBasicTabCompleter;
         private Consumer<CommandPacket> executor;
 
         public CommandBuilder name(String name) {
@@ -100,6 +85,11 @@ public class Command {
             return this;
         }
 
+        public CommandBuilder useBasicTabCompleter(boolean value) {
+            this.useBasicTabCompleter = value;
+            return this;
+        }
+
         public CommandBuilder noPermissionMessage(Message message) {
             this.noPermissionMessage = message;
             return this;
@@ -117,23 +107,21 @@ public class Command {
         public <T extends Command> T build(Class<T> type) {
             T command = null;
             try {
-                command = type.getConstructor().newInstance();
+                Constructor<?> constructor = type.getDeclaredConstructors()[0];
+                constructor.setAccessible(true);
+                command = (T) constructor.newInstance();
+                Class<?> basis = command.getClass().getSuperclass() == Command.class ?
+                        command.getClass().getSuperclass() : command.getClass();
                 for (Field field : getClass().getDeclaredFields()) {
-                    if (!field.canAccess(this)) {
-                        field.setAccessible(true);
-                    }
-                    Field f = command.getClass().getDeclaredField(field.getName());
-                    if (!f.canAccess(command)) {
-                        f.setAccessible(true);
-                    }
-                    f.set(command, Possible.emptyIfNull(field.get(this)));
+                    Field f = basis.getDeclaredField(field.getName());
+                    f.setAccessible(true);
+                    f.set(command, Possible.of(field.get(this)));
                 }
             } catch (NoSuchFieldException | IllegalAccessException | InvocationTargetException
-                    | InstantiationException | NoSuchMethodException ignored) {
+                    | InstantiationException ignored) {
             }
             return command;
         }
-
     }
 
 }
