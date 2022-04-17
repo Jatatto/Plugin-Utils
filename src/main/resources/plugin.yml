@@ -1,8 +1,10 @@
 name: Utils
 version: '${project.version}'
-main: com.jakehonea.utils.Utils
-api-version: 1.18
+main: com.jakehonea.tests.TestPlugin
+api-version: 1.16
 authors: [ Jatatto ]
 website: https://github.com/Jatatto
 softdepend:
   - PlaceholderAPI
+commands:
+  test:

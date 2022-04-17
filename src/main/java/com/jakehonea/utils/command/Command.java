@@ -25,6 +25,7 @@ public class Command {
     protected Optional<List<SubCommand>> arguments;
     protected Optional<Message> noPermissionMessage;
     protected Optional<Boolean> useBasicTabCompleter;
+
     protected Optional<Consumer<CommandPacket>> executor;
 
     protected Command() {

@@ -44,6 +44,18 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -52,6 +64,36 @@
             </resource>
         </resources>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>a0rptsrjepdn4-artifactory-primary-0-releases</name>
+            <url>https://honea.jfrog.io/artifactory/default-maven-virtual</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>a0rptsrjepdn4-artifactory-primary-0-snapshots</name>
+            <url>https://honea.jfrog.io/artifactory/default-maven-virtual</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+<!--    <repositories>
+        <repository>
+            <id>central</id>
+            <url>http://[host]:[port]/artifactory/libs-release</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>snapshots</id>
+            <url>http://[host]:[port]/artifactory/libs-snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>-->
 
     <repositories>
         <repository>
